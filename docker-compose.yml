@@ -2,15 +2,10 @@ version: "3"
 
 volumes:
   mysql_data:
+  homepage_static:
+  homepage_static_nuxt:
 
 services:
-
-  varnish:
-    build:
-      context: varnish
-    restart: always
-    ports:
-        - "80:80"
 
   nginx:
     build:
@@ -18,12 +13,36 @@ services:
     restart: always
     ports:
       - "8080:80"
+    volumes:
+      - homepage_static:/usr/src/homepage/public
+      - homepage_static_nuxt:/usr/src/homepage/public/_nuxt
 
+
+  varnish:
+    build:
+      context: varnish
+    restart: always
+    depends_on:
+      - nginx
+    ports:
+      - "80:80"
+
+  homepage:
+    image: knitpk/homepage:0.1.4-dev
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://api.knit.pk.edu.pl
+    volumes:
+      - homepage_static:/usr/src/app/static
+      - homepage_static_nuxt:/usr/src/app/.nuxt/dist
+    
   redis:
     build:
-        context: redis
+      context: redis
+    restart: always
     environment:
-        - REDIS_PASSWORD=Passw0rd
+      - REDIS_PASSWORD=Passw0rd
 
   mysql:
     image: mysql:5.7
