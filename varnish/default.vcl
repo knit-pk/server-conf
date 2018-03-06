@@ -34,7 +34,7 @@ sub vcl_deliver {
     //unset resp.http.Cache-Tags;
 
     // CORS
-    set req.http.Access-Control-Allow-Origin = "knit.pk.edu.pl";
+    set resp.http.Access-Control-Allow-Origin = "*";
     
     // Insert Diagnostic header to show Hit or Miss
     if (obj.hits > 0) {

@@ -42,8 +42,7 @@ services:
       - api_static_vendor:/usr/src/api/vendor
 
   homepage:
-    build:
-    image: knitpk/homepage:0.1.4-dev
+    image: knitpk/homepage:0.1.5-dev
     restart: always
     environment:
       - NODE_ENV=production
