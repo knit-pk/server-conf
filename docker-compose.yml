@@ -1,0 +1,45 @@
+version: "3"
+
+volumes:
+  mysql_data:
+
+services:
+
+  varnish:
+    build:
+      context: varnish
+    restart: always
+    ports:
+        - "80:80"
+
+  nginx:
+    build:
+      context: nginx
+    restart: always
+    ports:
+      - "8080:80"
+
+  redis:
+    build:
+        context: redis
+    environment:
+        - REDIS_PASSWORD=Passw0rd
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=Passw0rd
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  pma:
+    build:
+      context: pma
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      - PMA_HOST=mysql
+    ports:
+      - "8000:80"
