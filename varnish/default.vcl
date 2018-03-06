@@ -9,8 +9,7 @@ backend default {
 
 // Hosts allowed to send BAN requests
 acl ban {
-    #"api";
-    #"ppm";
+    "api";
 }
 
 sub vcl_backend_response {

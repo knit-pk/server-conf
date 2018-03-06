@@ -2,8 +2,10 @@ version: "3"
 
 volumes:
   mysql_data:
-  homepage_static:
-  homepage_static_nuxt:
+  homepage_static_public:
+  homepage_static_public_nuxt:
+  api_static_public:
+  api_static_vendor:
 
 services:
 
@@ -14,8 +16,10 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - homepage_static:/usr/src/homepage/public
-      - homepage_static_nuxt:/usr/src/homepage/public/_nuxt
+      - homepage_static_public:/usr/src/homepage/public
+      - homepage_static_public_nuxt:/usr/src/homepage/public/_nuxt
+      - api_static_public:/usr/src/api/public
+      - api_static_vendor:/usr/src/api/vendor
 
 
   varnish:
@@ -27,15 +31,26 @@ services:
     ports:
       - "80:80"
 
+  api:
+    image: knitpk/api:0.7.0-dev
+    restart: always
+    environment:
+      - DOT_ENV=.env.api.dev
+    volumes:
+      - .env.api.dev:/usr/src/api/.env.api.dev
+      - api_static_public:/usr/src/api/public
+      - api_static_vendor:/usr/src/api/vendor
+
   homepage:
+    build:
     image: knitpk/homepage:0.1.4-dev
     restart: always
     environment:
       - NODE_ENV=production
       - API_URL=http://api.knit.pk.edu.pl
     volumes:
-      - homepage_static:/usr/src/app/static
-      - homepage_static_nuxt:/usr/src/app/.nuxt/dist
+      - homepage_static_public:/usr/src/app/static
+      - homepage_static_public_nuxt:/usr/src/app/.nuxt/dist
     
   redis:
     build:
