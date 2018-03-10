@@ -2,24 +2,20 @@ version: "3"
 
 volumes:
   mysql_data:
-  homepage_static_public:
-  homepage_static_public_nuxt:
-  api_static_public:
-  api_static_vendor:
 
 services:
 
   nginx:
     build:
       context: nginx
+      args: 
+        - KNIT_API_TAG=0.7.0-dev
+        - KNIT_HOMEPAGE_TAG=0.1.5-dev
     restart: always
     ports:
       - "8080:80"
     volumes:
-      - homepage_static_public:/usr/src/homepage/public
-      - homepage_static_public_nuxt:/usr/src/homepage/public/_nuxt
-      - api_static_public:/usr/src/api/public
-      - api_static_vendor:/usr/src/api/vendor
+      - ./volumes/images:/usr/src/api/public/media/upload
 
 
   varnish:
@@ -34,35 +30,21 @@ services:
   api:
     image: knitpk/api:0.7.0-dev
     restart: always
-    environment:
-      - DOT_ENV=.env.api.dev
     volumes:
-      - .env.api.dev:/usr/src/api/.env.api.dev
-      - api_static_public:/usr/src/api/public
-      - api_static_vendor:/usr/src/api/vendor
+      - ./volumes/images:/usr/src/api/public/media/upload
 
   homepage:
     image: knitpk/homepage:0.1.5-dev
     restart: always
-    environment:
-      - NODE_ENV=production
-      - API_URL=http://api.knit.pk.edu.pl
-    volumes:
-      - homepage_static_public:/usr/src/app/static
-      - homepage_static_public_nuxt:/usr/src/app/.nuxt/dist
     
   redis:
     build:
       context: redis
     restart: always
-    environment:
-      - REDIS_PASSWORD=Passw0rd
 
   mysql:
     image: mysql:5.7
     restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=Passw0rd
     volumes:
       - mysql_data:/var/lib/mysql
 
