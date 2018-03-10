@@ -3,8 +3,10 @@ version: "3"
 volumes:
   mysql_data:
 
-services:
+networks: 
+  main:
 
+services:
   nginx:
     build:
       context: nginx
@@ -12,6 +14,8 @@ services:
         - KNIT_API_TAG=0.7.0-dev
         - KNIT_HOMEPAGE_TAG=0.1.5-dev
     restart: always
+    networks: 
+      - main
     ports:
       - "8080:80"
     volumes:
@@ -22,6 +26,10 @@ services:
     build:
       context: varnish
     restart: always
+    networks: 
+      main:
+        aliases:
+          - api.knit.pk.edu.pl
     depends_on:
       - nginx
     ports:
@@ -30,21 +38,29 @@ services:
   api:
     image: knitpk/api:0.7.0-dev
     restart: always
+    networks: 
+      - main
     volumes:
       - ./volumes/images:/usr/src/api/public/media/upload
 
   homepage:
     image: knitpk/homepage:0.1.5-dev
     restart: always
+    networks: 
+      - main
     
   redis:
     build:
       context: redis
     restart: always
+    networks: 
+      - main
 
   mysql:
     image: mysql:5.7
     restart: always
+    networks: 
+      - main
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -52,6 +68,8 @@ services:
     build:
       context: pma
     restart: always
+    networks: 
+      - main
     depends_on:
       - mysql
     environment:
