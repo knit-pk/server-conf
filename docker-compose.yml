@@ -12,6 +12,7 @@ services:
       context: nginx
       args: 
         - KNIT_API_TAG=0.7.0-dev
+        - KNIT_API_ADMIN_TAG=0.3.1-dev
         - KNIT_HOMEPAGE_TAG=0.1.5-dev
     restart: always
     networks: 
