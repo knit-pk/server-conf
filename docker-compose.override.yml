@@ -1,18 +1,11 @@
 version: "3"
 
 services:
-  nginx:
-    volumes:
-      - ./volumes/bundles:/usr/src/api/public/bundles
-      - ./volumes/vendor:/usr/src/api/vendor
-
   api:
     environment:
       - DOT_ENV=.env.api.dev
     volumes:
       - ./.env.api.dev:/usr/src/api/.env.api.dev
-      - ./volumes/bundles:/usr/src/api/public/bundles
-      - ./volumes/vendor:/usr/src/api/vendor
 
   homepage:
     environment:
