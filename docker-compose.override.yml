@@ -1,21 +1,18 @@
-version: "3"
-
+version: '3.6'
 services:
   api:
-    environment:
-      - DOT_ENV=.env.api.dev
-    volumes:
-      - ./.env.api.dev:/usr/src/api/.env.api.dev
-
+    env_file: .env.api
   homepage:
     environment:
       - NODE_ENV=production
-      - API_URL=http://api.knit.pk.edu.pl
-    
+      - 'API_URL=http://api.knit.pk.edu.pl'
   redis:
     environment:
       - REDIS_PASSWORD=Passw0rd
-
   mysql:
     environment:
       - MYSQL_ROOT_PASSWORD=Passw0rd
+  pma:
+    environment:
+      - PMA_USER=root
+      - PMA_PASSWORD=Passw0rd

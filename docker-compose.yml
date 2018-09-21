@@ -1,79 +1,80 @@
-version: "3"
-
+version: '3.6'
 volumes:
-  mysql_data:
-
-networks: 
-  main:
-
+  knit_mysql_data: {}
+networks:
+  main: {}
 services:
   nginx:
     build:
       context: nginx
-      args: 
-        - KNIT_API_TAG=0.7.0-dev
-        - KNIT_API_ADMIN_TAG=0.3.1-dev
-        - KNIT_HOMEPAGE_TAG=0.1.5-dev
-    restart: always
-    networks: 
-      - main
+      args:
+        - KNIT_API_TAG=latest
+        - KNIT_API_ADMIN_TAG=latest
+        - KNIT_HOMEPAGE_TAG=latest
+        - ADMIN_PUBLIC_URL=/admin
+        - 'ADMIN_API_URL=http://api.knit.pk.edu.pl'
+    depends_on:
+      - api
+    environment:
+      - PORT=9988
+      - 'API_URL=http://api:9501'
+    networks:
+      main:
+        aliases:
+          - static.proxy
     ports:
-      - "8080:80"
+      - '8100:9988'
     volumes:
-      - ./volumes/images:/usr/src/api/public/media/upload
-
-
+      - './volumes/images:/usr/src/api/public/media/upload:ro'
   varnish:
     build:
       context: varnish
     restart: always
-    networks: 
+    networks:
       main:
         aliases:
           - api.knit.pk.edu.pl
     depends_on:
+      - api
       - nginx
     ports:
-      - "80:80"
-
+      - '80:80'
   api:
-    image: knitpk/api:0.7.0-dev
+    image: 'knitpk/api:latest'
     restart: always
-    networks: 
+    environment:
+      - HOST=api
+    networks:
       - main
     volumes:
-      - ./volumes/images:/usr/src/api/public/media/upload
-
+      - './volumes/images:/usr/src/api/public/media/upload:rw'
   homepage:
-    image: knitpk/homepage:0.1.5-dev
+    image: 'knitpk/homepage:latest'
     restart: always
-    networks: 
+    networks:
       - main
-    
   redis:
     build:
       context: redis
     restart: always
-    networks: 
+    networks:
       - main
-
   mysql:
-    image: mysql:5.7
+    image: 'mysql:5.7'
     restart: always
-    networks: 
+    networks:
       - main
     volumes:
-      - mysql_data:/var/lib/mysql
-
+      - 'knit_mysql_data:/var/lib/mysql'
   pma:
     build:
       context: pma
     restart: always
-    networks: 
+    networks:
       - main
     depends_on:
       - mysql
     environment:
       - PMA_HOST=mysql
     ports:
-      - "8000:80"
+      - '8000:80'

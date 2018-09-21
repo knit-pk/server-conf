@@ -3,12 +3,12 @@ vcl 4.0;
 import std;
 
 backend default {
-    .host = "nginx";
-    .port = "80";
+    .host = "static.proxy";
+    .port = "9988";
 }
 
 // Hosts allowed to send BAN requests
-acl ban {
+acl ban_permitted {
     "api";
 }
 
@@ -34,8 +34,8 @@ sub vcl_deliver {
     //unset resp.http.Cache-Tags;
 
     // CORS
-    set resp.http.Access-Control-Allow-Origin = "*";
-    
+    set req.http.Access-Control-Allow-Origin = "*";
+
     // Insert Diagnostic header to show Hit or Miss
     if (obj.hits > 0) {
         set resp.http.X-Cache = "Hits: " + obj.hits;
@@ -45,7 +45,6 @@ sub vcl_deliver {
 }
 
 sub vcl_recv {
-
     // Remove the "Forwarded" HTTP header if exists (security)
     unset req.http.forwarded;
 
@@ -60,7 +59,7 @@ sub vcl_recv {
 
     // To allow API Platform to ban by cache tags
     if (req.method == "BAN") {
-        if (client.ip !~ ban) {
+        if (client.ip !~ ban_permitted) {
             return(synth(405, "Not allowed: " + client.ip));
         }
 
@@ -77,23 +76,8 @@ sub vcl_recv {
         return (pass);
     }
 
-    if (req.http.host !~ "api\.knit\.pk\.edu\.pl") {
-        return(pass);
-    }
-
-    // Remove all cookies except the session ID.
-    if (req.http.Cookie) {
-        set req.http.Cookie = ";" + req.http.Cookie;
-        set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
-        set req.http.Cookie = regsuball(req.http.Cookie, ";(PHPSESSID)=", "; \1=");
-        set req.http.Cookie = regsuball(req.http.Cookie, ";[^ ][^;]*", "");
-        set req.http.Cookie = regsuball(req.http.Cookie, "^[; ]+|[; ]+$", "");
-
-        if (req.http.Cookie == "") {
-            // If there are no more cookies, remove the header to get page cached.
-            unset req.http.Cookie;
-        }
-    }
+    // Remove all cookies to get page cached.
+    unset req.http.Cookie;
 
     return(hash);
 }
