@@ -1,12 +1,34 @@
 version: '3.6'
 volumes:
   knit_mysql_data: {}
+
 networks:
-  main: {}
+  main:
+    name: knit_main
+  homepage:
+    name: knit_homepage
+
 services:
-  nginx:
+  reverse-proxy:
+    restart: always
+    image: traefik:latest
+    networks: 
+      - main
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - './reverse-proxy/traefik.toml:/etc/traefik/traefik.toml'
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  static-proxy:
+    image: 'knitpk/static-proxy:latest'
+    restart: always
+    networks: 
+      - main
     build:
-      context: nginx
+      context: static-proxy
       args:
         - KNIT_API_TAG=latest
         - KNIT_API_ADMIN_TAG=latest
@@ -18,63 +40,88 @@ services:
     environment:
       - PORT=9988
       - 'API_URL=http://api:9501'
-    networks:
-      main:
-        aliases:
-          - static.proxy
-    ports:
-      - '8100:9988'
+      - 'HOMEPAGE_URL=http://homepage:3000'
     volumes:
       - './volumes/images:/usr/src/api/public/media/upload:ro'
-  varnish:
-    build:
-      context: varnish
+    labels:
+      traefik.enable: true
+      traefik.port: 9988
+      traefik.frontend.rule: Host:api.knit.pk.edu.pl,www.knit.pk.edu.pl,knit.pk.edu.pl
+
+  caching-proxy:
+    image: 'knitpk/caching-proxy:latest'
     restart: always
-    networks:
-      main:
-        aliases:
+    networks: 
+      main: {}
+      homepage:
+        aliases: 
           - api.knit.pk.edu.pl
+    build:
+      context: caching-proxy
     depends_on:
       - api
-      - nginx
-    ports:
-      - '80:80'
+      - static-proxy
+    labels:
+      traefik.docker.network: knit_main
+      traefik.enable: true
+      traefik.port: 80
+      traefik.frontend.rule: Host:api.knit.pk.edu.pl
+
   api:
     image: 'knitpk/api:latest'
     restart: always
+    networks: 
+      - main
     environment:
       - HOST=api
-    networks:
-      - main
     volumes:
       - './volumes/images:/usr/src/api/public/media/upload:rw'
+
   homepage:
     image: 'knitpk/homepage:latest'
     restart: always
-    networks:
+    networks: 
       - main
+      - homepage
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - 'API_URL=http://api.knit.pk.edu.pl'
+    labels:
+      traefik.docker.network: knit_main
+      traefik.enable: true
+      traefik.port: 3000
+      traefik.frontend.rule: Host:knit.pk.edu.pl
+
   redis:
+    image: 'knitpk/redis:latest'
+    restart: always
+    networks: 
+      - main
     build:
       context: redis
-    restart: always
-    networks:
-      - main
+
   mysql:
     image: 'mysql:5.7'
     restart: always
-    networks:
+    networks: 
       - main
     volumes:
       - 'knit_mysql_data:/var/lib/mysql'
+      
   pma:
+    image: 'knitpk/pma:latest'
+    restart: always
+    networks: 
+      - main
     build:
       context: pma
-    restart: always
-    networks:
-      - main
     depends_on:
       - mysql
     environment:
       - PMA_HOST=mysql
-    ports:
-      - '8000:80'
+    labels:
+      traefik.enable: true
+      traefik.port: 80
+      traefik.frontend.entryPoints: http8081
+      traefik.frontend.rule: Host:admin.knit.pk.edu.pl

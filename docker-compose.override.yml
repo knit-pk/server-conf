@@ -2,10 +2,7 @@ version: '3.6'
 services:
   api:
     env_file: .env.api
-  homepage:
-    environment:
-      - NODE_ENV=production
-      - 'API_URL=http://api.knit.pk.edu.pl'
+      
   redis:
     environment:
       - REDIS_PASSWORD=Passw0rd
