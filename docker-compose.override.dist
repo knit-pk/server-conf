@@ -2,25 +2,44 @@ version: '3.6'
 services:
   reverse-proxy:
     ports:
-      - "443:443"
-      # - "8080:8080"
-      - "8081:8081"
-      - "8082:8082"
+      - '443:443'
+      - '8081:8081'
+      - '8082:8082'
     volumes:
       - './reverse-proxy/traefik.dist:/etc/traefik/traefik.toml:ro'
     labels:
-      traefik.enable: true
       traefik.port: 9999
       traefik.frontend.entryPoints: http8082
-      traefik.frontend.rule: Host:admin.knit.pk.edu.pl
+      traefik.frontend.rule: 'Host:knit.pk.edu.pl'
+
+  static-proxy:
+    build:
+      args:
+        - KNIT_API_TAG=0.13.0
+        - KNIT_API_ADMIN_TAG=0.5.1
+        - KNIT_HOMEPAGE_TAG=0.5.1
+    labels:
+      traefik.frontend.rule: 'Host:api.knit.pk.edu.pl,test.knit.pk.edu.pl'
 
   api:
     env_file: .env.api.dist
-      
+
+  archive:
+    environment:
+      - 'DOMAIN=http://archive.knit.pk.edu.pl/'
+      - DATABASE_NAME=knit_archive
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=Passw0rd
+    labels:
+      traefik.frontend.rule: 'Host:archive.knit.pk.edu.pl,www.knit.pk.edu.pl,knit.pk.edu.pl'
+
+  homepage:
+    labels:
+      traefik.frontend.rule: 'Host:test.knit.pk.edu.pl'
+
   redis:
     environment:
       - REDIS_PASSWORD=Passw0rd
-
   mysql:
     environment:
       - MYSQL_ROOT_PASSWORD=Passw0rd
@@ -30,7 +49,5 @@ services:
       - PMA_USER=root
       - PMA_PASSWORD=Passw0rd
     labels:
-      traefik.enable: true
-      traefik.port: 80
       traefik.frontend.entryPoints: http8081
-      traefik.frontend.rule: Host:admin.knit.pk.edu.pl
+      traefik.frontend.rule: 'Host:knit.pk.edu.pl'

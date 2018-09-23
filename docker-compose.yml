@@ -11,19 +11,21 @@ networks:
 services:
   reverse-proxy:
     restart: always
-    image: traefik:latest
-    networks: 
+    image: 'traefik:latest'
+    networks:
       - main
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - './volumes/acme:/etc/traefik/acme'
-      - /var/run/docker.sock:/var/run/docker.sock
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    labels:
+      traefik.enable: true
 
   static-proxy:
     image: 'knitpk/static-proxy:latest'
     restart: always
-    networks: 
+    networks:
       - main
     build:
       context: static-proxy
@@ -44,15 +46,14 @@ services:
     labels:
       traefik.enable: true
       traefik.port: 9988
-      traefik.frontend.rule: Host:api.knit.pk.edu.pl,www.knit.pk.edu.pl,knit.pk.edu.pl
 
   caching-proxy:
     image: 'knitpk/caching-proxy:latest'
     restart: always
-    networks: 
+    networks:
       main: {}
       homepage:
-        aliases: 
+        aliases:
           - api.knit.pk.edu.pl
     build:
       context: caching-proxy
@@ -63,22 +64,41 @@ services:
       traefik.docker.network: knit_main
       traefik.enable: true
       traefik.port: 80
-      traefik.frontend.rule: Host:api.knit.pk.edu.pl
+      traefik.frontend.rule: 'Host:api.knit.pk.edu.pl'
 
   api:
     image: 'knitpk/api:latest'
     restart: always
-    networks: 
+    depends_on: 
+      - mysql
+      - redis
+    networks:
       - main
     environment:
       - HOST=api
     volumes:
       - './volumes/images:/usr/src/api/public/media/upload:rw'
 
+  archive:
+    image: 'knitpk/archive:1.0.0'
+    restart: always
+    depends_on: 
+      - mysql
+    networks:
+      - main
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_NAME=knit_archive
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=Passw0rd
+    labels:
+      traefik.enable: true
+      traefik.port: 80
+
   homepage:
     image: 'knitpk/homepage:latest'
     restart: always
-    networks: 
+    networks:
       - main
       - homepage
     environment:
@@ -89,12 +109,11 @@ services:
       traefik.docker.network: knit_main
       traefik.enable: true
       traefik.port: 3000
-      traefik.frontend.rule: Host:knit.pk.edu.pl
 
   redis:
     image: 'knitpk/redis:latest'
     restart: always
-    networks: 
+    networks:
       - main
     build:
       context: redis
@@ -102,15 +121,15 @@ services:
   mysql:
     image: 'mysql:5.7'
     restart: always
-    networks: 
+    networks:
       - main
     volumes:
       - 'knit_mysql_data:/var/lib/mysql'
-      
+
   pma:
     image: 'knitpk/pma:latest'
     restart: always
-    networks: 
+    networks:
       - main
     build:
       context: pma
@@ -118,3 +137,6 @@ services:
       - mysql
     environment:
       - PMA_HOST=mysql
+    labels:
+      traefik.enable: true
+      traefik.port: 80
