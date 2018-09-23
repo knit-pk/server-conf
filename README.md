@@ -15,6 +15,12 @@ At first edit `/etc/hosts` as root user, and add following lines:
 127.0.0.1       static.knit.pk.edu.pl
 ```
 
+Create default docker-compose.override.yml:
+
+```bash
+$ cp docker-compose.override.dist docker-compose.override.yml
+```
+
 Then optionally put changes on `docker-compose.override.yml`
 
 And run:
@@ -42,5 +48,4 @@ $ APP_ENV=dev make fixtures-reload
 - api.knit.pk.edu.pl/admin - KNIT API Admin
 - admin.knit.pk.edu.pl:8081 - PHPMyAdmin
 - archive.knit.pk.edu.pl - Old CMS (TBD)
-- static.knit.pk.edu.pl - Static content (TBD)
 - (*.)knit.pk.edu.pl:8080 - Traefik Dashboard and API

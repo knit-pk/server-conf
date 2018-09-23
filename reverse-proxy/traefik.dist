@@ -22,7 +22,7 @@ logLevel = "DEBUG"
 # Optional
 # Default: ["http"]
 #
-defaultEntryPoints = ["http"]
+defaultEntryPoints = ["http", "https"]
 
 ################################################################
 # Entrypoints configuration
@@ -35,8 +35,25 @@ defaultEntryPoints = ["http"]
 [entryPoints]
     [entryPoints.http]
     address = ":80"
+
+    [entryPoints.maintenance]
+    address = ":9999"
+
+    # [entryPoints.http8080]
+    # address = ":8080"
+    #   [entryPoints.http8080.tls]
+
     [entryPoints.http8081]
     address = ":8081"
+      [entryPoints.http8081.tls]
+
+    [entryPoints.http8082]
+    address = ":8082"
+      [entryPoints.http8082.tls]
+
+    [entryPoints.https]
+    address = ":443"
+      [entryPoints.https.tls]
 
 ################################################################
 # Traefik logs configuration
@@ -96,7 +113,7 @@ defaultEntryPoints = ["http"]
 ################################################################
 
 [api]
-  entryPoint = "traefik"
+  entryPoint = "maintenance"
   dashboard = true
 
 ################################################################
@@ -105,13 +122,7 @@ defaultEntryPoints = ["http"]
 
 # Enable ping
 [ping]
-
-  # Name of the related entry point
-  #
-  # Optional
-  # Default: "traefik"
-  #
-  # entryPoint = "traefik"
+  entryPoint = "maintenance"
 
 ################################################################
 # Docker configuration backend
@@ -123,71 +134,18 @@ defaultEntryPoints = ["http"]
 
 # Enable Docker Provider.
 [docker]
-
-# Docker server endpoint. Can be a tcp or a unix socket endpoint.
-#
-# Required
-#
 endpoint = "unix:///var/run/docker.sock"
-
-# Default domain used.
-# Can be overridden by setting the "traefik.domain" label on a container.
-#
-# Required
-#
 domain = "knit.pk.edu.pl"
-
-# Enable watch docker changes.
-#
-# Optional
-#
 watch = true
-
-# Override default configuration template.
-# For advanced users :)
-#
-# Optional
-#
-# filename = "docker.tmpl"
-
-# Override template version
-# For advanced users :)
-#
-# Optional
-# - "1": previous template version (must be used only with older custom templates, see "filename")
-# - "2": current template version (must be used to force template version when "filename" is used)
-#
-# templateVersion = 2
-
-# Expose containers by default in Traefik.
-# If set to false, containers that don't have `traefik.enable=true` will be ignored.
-#
-# Optional
-# Default: true
-#
 exposedByDefault = false
-
-# Use the IP address from the binded port instead of the inner network one.
-# For specific use-case :)
-#
-# Optional
-# Default: false
-#
-usebindportip = true
-
-# Use Swarm Mode services as data provider.
-#
-# Optional
-# Default: false
-#
+usebindportip = false
 swarmMode = false
 
-# Enable docker TLS connection.
-#
-# Optional
-#
-#  [docker.tls]
-#  ca = "/etc/ssl/ca.crt"
-#  cert = "/etc/ssl/docker.crt"
-#  key = "/etc/ssl/docker.key"
-#  insecureSkipVerify = true
+# [acme]
+#   email = "travis.knit@gmail.com"
+#   storage = "acme.json"
+#   entryPoint = "https"
+#   caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+#   onHostRule = true
+#   [acme.httpChallenge]
+#     entryPoint = "http"

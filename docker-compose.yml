@@ -16,10 +16,8 @@ services:
       - main
     ports:
       - "80:80"
-      - "8080:8080"
-      - "8081:8081"
     volumes:
-      - './reverse-proxy/traefik.toml:/etc/traefik/traefik.toml'
+      - './volumes/acme:/etc/traefik/acme'
       - /var/run/docker.sock:/var/run/docker.sock
 
   static-proxy:
@@ -120,8 +118,3 @@ services:
       - mysql
     environment:
       - PMA_HOST=mysql
-    labels:
-      traefik.enable: true
-      traefik.port: 80
-      traefik.frontend.entryPoints: http8081
-      traefik.frontend.rule: Host:admin.knit.pk.edu.pl

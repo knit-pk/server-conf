@@ -1,0 +1,36 @@
+version: '3.6'
+services:
+  reverse-proxy:
+    ports:
+      - "443:443"
+      # - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - './reverse-proxy/traefik.dist:/etc/traefik/traefik.toml:ro'
+    labels:
+      traefik.enable: true
+      traefik.port: 9999
+      traefik.frontend.entryPoints: http8082
+      traefik.frontend.rule: Host:admin.knit.pk.edu.pl
+
+  api:
+    env_file: .env.api.dist
+      
+  redis:
+    environment:
+      - REDIS_PASSWORD=Passw0rd
+
+  mysql:
+    environment:
+      - MYSQL_ROOT_PASSWORD=Passw0rd
+
+  pma:
+    environment:
+      - PMA_USER=root
+      - PMA_PASSWORD=Passw0rd
+    labels:
+      traefik.enable: true
+      traefik.port: 80
+      traefik.frontend.entryPoints: http8081
+      traefik.frontend.rule: Host:admin.knit.pk.edu.pl

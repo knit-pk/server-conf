@@ -47,7 +47,3 @@ COPY --from=api-admin /usr/src/app/build /usr/src/api/public/admin
 # Add homepage static resources
 COPY --from=hompepage /usr/src/app/src/static /usr/src/homepage/public
 COPY --from=hompepage /usr/src/app/.nuxt/dist/client /usr/src/homepage/public/_nuxt
-
-# Use only local favicon
-RUN rm /usr/src/api/public/favicon.ico \
-    /usr/src/homepage/public/favicon.ico
