@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+KNIT_API_TAG=latest
+KNIT_API_ADMIN_TAG=latest
+KNIT_HOMEPAGE_TAG=latest
+KNIT_ARCHIVE_TAG=1.0.0
+
+docker-compose up -d
+
+#docker stack deploy -f docker-compose.yml -f docker-compose.override.yml knit

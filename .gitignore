@@ -2,3 +2,4 @@
 !.env.*.dist
 docker-compose.*.yml
 /reverse-proxy/traefik.toml
+deploy.sh

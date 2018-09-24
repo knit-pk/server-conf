@@ -13,16 +13,11 @@ services:
       traefik.frontend.rule: 'Host:knit.pk.edu.pl'
 
   static-proxy:
-    build:
-      args:
-        - KNIT_API_TAG=latest
-        - KNIT_API_ADMIN_TAG=latest
-        - KNIT_HOMEPAGE_TAG=latest
     labels:
       traefik.frontend.rule: 'Host:api.knit.pk.edu.pl,test.knit.pk.edu.pl'
 
-  api:
-    env_file: .env.api.dist
+  # api:
+  #   env_file: .env.api.prod
 
   archive:
     environment:
@@ -30,6 +25,8 @@ services:
       - DATABASE_NAME=knit_archive
       - DATABASE_USER=root
       - DATABASE_PASSWORD=Passw0rd
+    # volumes:
+    #   - './volumes/archive-images:/usr/src/archive/public/pliki:rw'
     labels:
       traefik.frontend.rule: 'Host:archive.knit.pk.edu.pl,www.knit.pk.edu.pl,knit.pk.edu.pl'
 
@@ -40,9 +37,11 @@ services:
   redis:
     environment:
       - REDIS_PASSWORD=Passw0rd
+
   mysql:
     environment:
       - MYSQL_ROOT_PASSWORD=Passw0rd
+      # - MYSQL_RANDOM_ROOT_PASSWORD=yes
 
   pma:
     environment:
