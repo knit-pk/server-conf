@@ -15,9 +15,9 @@ services:
   static-proxy:
     build:
       args:
-        - KNIT_API_TAG=0.13.0
-        - KNIT_API_ADMIN_TAG=0.5.1
-        - KNIT_HOMEPAGE_TAG=0.5.1
+        - KNIT_API_TAG=latest
+        - KNIT_API_ADMIN_TAG=latest
+        - KNIT_HOMEPAGE_TAG=latest
     labels:
       traefik.frontend.rule: 'Host:api.knit.pk.edu.pl,test.knit.pk.edu.pl'
 

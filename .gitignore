@@ -1,4 +1,4 @@
 .env*
 !.env.*.dist
 docker-compose.*.yml
-/reverse-proxy/treafik.toml
+/reverse-proxy/traefik.toml
