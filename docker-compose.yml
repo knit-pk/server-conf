@@ -88,9 +88,6 @@ services:
       - main
     environment:
       - DATABASE_HOST=mysql
-      - DATABASE_NAME=knit_archive
-      - DATABASE_USER=root
-      - DATABASE_PASSWORD=Passw0rd
     labels:
       traefik.enable: true
       traefik.port: 80
